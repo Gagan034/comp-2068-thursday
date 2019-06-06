@@ -1,17 +1,7 @@
 const router = require('express').Router();
 
-// // Create our routes
-// router.get('/', (req, res) => {
-//     res.send(`Hey 'dere world!`);
-// });
-
-// router.get('/about', (req, res) => {
-//     res.send(`I like long walks on the beach.`);
-// });
-
-
-//  Our Controllers
-const PagesController = require('../controllers/pagesControllers');
+// Our controllers
+const PagesController = require('../controllers/pagesController');
 
 // Create our routes
 router.get(`/`, PagesController.show);

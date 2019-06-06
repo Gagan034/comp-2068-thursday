@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 
-//Import our Page Routes
+// Import our Page Routes
 const pageRoutes = require('./routes/pages');
 
 // Register our Page Routes with our app
