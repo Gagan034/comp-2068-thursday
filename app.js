@@ -16,6 +16,31 @@ const path = require('path');
 
 const app = express();
 
+// cookies
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
+const flash = require('connect-flash');
+
+app.use(cookieParser());
+app.use(session({
+    secret: (process.env.secret || 'bookrakacha'),
+    cookie: {
+        masAge: 10800000
+    },
+    resave: true,
+    saveUninitialized: true
+}));
+
+app.use(flash());
+app.use((req, res, next) => {
+    res.locals.flash = res.locals.flash || {};
+    res.locals.flash.success = req.flash('success') || null;
+    res.locals.flash.error = req.flash('error') || null;
+
+    next();
+
+});
+
 // Body Parser
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
