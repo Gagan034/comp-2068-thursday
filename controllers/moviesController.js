@@ -1,7 +1,12 @@
 const Movie = require('../models/movie');
 
 exports.index = (req, res) => {
-    Movie.find()
+    req.isAuthenticated();
+
+    Movie.find({
+        author: req.session.userId
+    })
+        .populate('author')
         .then(movies => {
             res.render('movies/index', {
                 movies: movies,
@@ -15,13 +20,18 @@ exports.index = (req, res) => {
 };
 
 exports.drafts = (req, res) => {
-    Movie.find().draft()
-        .then(movies => {
-            res.render('movies/index', {
-                movies: movies,
-                title: 'Drafts'
-            });
-        })
+    req.isAuthenticated();
+
+    Movie.find({
+        author: req.session.userId
+    }).draft()
+    .populate('author')
+    .then(movies => {
+        res.render('movies/index', {
+            movies: movies,
+            title: 'Drafts'
+        });
+    })
         .catch(err => {
             req.flash('error', `ERROR: ${err}`);
             res.redirect('/');
@@ -29,21 +39,31 @@ exports.drafts = (req, res) => {
 };
 
 exports.published = (req, res) => {
-    Movie.find().published()
-        .then(movies => {
-            res.render('movies/index', {
-                movies: movies,
-                title: 'Published'
-            });
-        })
-        .catch(err => {
-            req.flash('error', `ERROR: ${err}`);
-            res.redirect('/');
+    req.isAuthenticated();
+
+    Movie.find({
+        author: req.session.userId
+    }).published()
+    .populate('author')
+    .then(movies => {
+        res.render('movies/index', {
+            movies: movies,
+            title: 'Published'
         });
+    })
+    .catch(err => {
+        req.flash('error', `ERROR: ${err}`);
+        res.redirect('/');
+    });
 };
 
 exports.show = (req, res) => {
-    Movie.findById(req.params.id)
+    req.isAuthenticated();
+
+    Movie.findOne({
+        _id: req.params.id,
+        author: req.session.userId
+    })
     .then(movie => {
         res.render('movies/show', {
             movie: movie,
@@ -57,13 +77,20 @@ exports.show = (req, res) => {
 };
 
 exports.new = (req, res) => {
+    req.isAuthenticated();
+
     res.render('movies/new', {
         title: 'My New Movie'
     });
 };
 
 exports.edit = (req, res) => {
-    Movie.findById(req.params.id)
+    req.isAuthenticated();
+    
+    Movie.findOne({
+        _id: req.params.id,
+        author: req.session.userId
+    })
     .then(movie => {
         res.render('movies/edit', {
             movie: movie,
@@ -77,11 +104,11 @@ exports.edit = (req, res) => {
 };
 
 exports.create = (req, res) => {
-    Movie.create({
-        title: req.body.movie.title,
-        content: req.body.movie.content,
-        status: req.body.movie.status
-    })
+    req.isAuthenticated();
+
+    req.body.blog.author = req.session.userId;
+
+    Movie.create(req.body.blog)
     .then(() => {
         req.flash('success', 'New Movie was created successfully.');
         res.redirect('/movies');
@@ -93,8 +120,11 @@ exports.create = (req, res) => {
 };
 
 exports.update = (req, res) => {
+    req.isAuthenticated();
+
     Movie.updateOne({
-        _id: req.body.id
+        _id: req.body.id,
+        author: req.session.userId
     }, req.body.movie, {
         runValidators: true
     })
@@ -110,7 +140,8 @@ exports.update = (req, res) => {
 
 exports.destroy = (req, res) => {
     Movie.deleteOne({
-        _id: req.body.id
+        _id: req.body.id,
+        author: req.session.userId
     })
     .then(() => {
         req.flash('success', 'New Movie was created successfully.');
